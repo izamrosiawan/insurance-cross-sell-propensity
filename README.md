@@ -4,6 +4,7 @@
 [![LightGBM](https://img.shields.io/badge/LightGBM-4.0%2B-green.svg)](https://lightgbm.readthedocs.io/)
 [![Scikit-Learn](https://img.shields.io/badge/Scikit--Learn-Classification-orange.svg)](https://scikit-learn.org/)
 [![Domain](https://img.shields.io/badge/Domain-Cross--Sell%20Marketing-blueviolet.svg)](#)
+[![Tests](https://img.shields.io/badge/Tests-Pytest%20Passing-brightgreen.svg)](#)
 
 Repositori ini mengimplementasikan sistem penargetan pemasaran berbasis probabilitas kecenderungan (*Propensity Score Targeting & Uplift Analytics*) untuk penawaran silang (*cross-sell*) produk asuransi kendaraan bermotor (*Vehicle Insurance*) kepada basis nasabah asuransi kesehatan (*Health Insurance*).
 
@@ -26,12 +27,14 @@ $$\text{Lift (Decile } k) = \frac{\text{Conversion Rate in Decile } k}{\text{Ove
 ## 2. Struktur Repositori
 
 ```
-├── data/           # Dataset mentah & bersih (train.csv, test.csv, sample_submission.csv)
-├── images/         # Grafik plot hasil render dari Jupyter (300 DPI)
-│   ├── cross_sell_eda.png
-│   └── cross_sell_gains_lift.png
-├── notebook.ipynb  # Mesin pemrosesan: HANYA berisi impor, olah data, perhitungan statistik, dan pemodelan
-└── README.md       # Laporan utama: Pembahasan bisnis, rumus, tabel metrik, grafik tersemat, dan rekomendasi
+├── .gitignore          # Konfigurasi pengabaian cache Git
+├── data/               # Dataset mentah & bersih (train.csv, test.csv, sample_submission.csv)
+├── images/             # Grafik plot hasil render dari Jupyter & SHAP (300 DPI)
+├── models/             # Binary model pipeline ter-serialize (cross_sell_model.joblib)
+├── src/                # Modular Python inference engine (CrossSellEngine)
+├── tests/              # Automated unit tests (Pytest)
+├── notebook.ipynb      # Mesin pemrosesan: Impor, olah data, perhitungan statistik, dan pemodelan
+└── README.md           # Laporan utama: Pembahasan bisnis, rumus, tabel metrik, grafik tersemat, dan rekomendasi
 ```
 
 ---
@@ -75,7 +78,36 @@ Evaluasi performa model diuji pada data pengujian terisolasi (*holdout test set*
 
 ---
 
-## 5. Rekomendasi Bisnis & Efisiensi Kampanye
+## 5. Explainable AI: SHAP Propensity Attributions
+
+Analisis faktor pendorong konversi menggunakan SHAP Summary Plot:
+
+![SHAP Cross Sell Plot](images/shap_cross_sell_explainability.png)
+
+---
+
+## 6. Implementasi Modular & Pengujian Otomatis
+
+Modul scoring propensity tersedia di `src/cross_sell_engine.py`:
+
+```python
+from src.cross_sell_engine import CrossSellEngine
+import pandas as pd
+
+engine = CrossSellEngine()
+sample = pd.read_csv('data/train.csv', nrows=1)
+prob = engine.predict_propensity(sample)
+print(f"Probabilitas Minat Cross-Sell: {prob[0] * 100:.2f}%")
+```
+
+Jalankan automated unit test:
+```bash
+pytest tests/
+```
+
+---
+
+## 7. Rekomendasi Bisnis & Efisiensi Kampanye
 
 1. **Targeting Cut-Off pada Top 30% (Desil 1 - 3)**:
    * Tim pemasaran direkomendasikan **hanya menghubungi nasabah pada Desil 1 hingga 3 (30% basis data teratas)**. Strategi ini berhasil mengamankan **79,16% dari seluruh total potensi penjualan** sekaligus memangkas beban biaya telemarketing sebesar **70%**.
@@ -86,7 +118,7 @@ Evaluasi performa model diuji pada data pengujian terisolasi (*holdout test set*
 
 ---
 
-## 6. Panduan Menjalankan
+## 8. Panduan Menjalankan
 
 1. **Pasang Dependensi**:
    ```bash
